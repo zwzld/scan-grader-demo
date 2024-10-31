@@ -1,101 +1,147 @@
-import Image from "next/image";
+import React, { useState, useRef, useEffect } from 'react';
 
-export default function Home() {
+const ScanGraderDemo = () => {
+  const videoRef = useRef(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [results, setResults] = useState([]);
+
+  // 示例答案数据 - 实际使用时应该使用完整数据
+  const answers = {
+    "声声慢": [
+      ["寻寻觅觅", "冷冷清清", "凄凄惨惨戚戚"],
+      ["乍暖还寒", "时候最难将息"]
+    ],
+    "归园田居": [
+      ["少无适俗韵", "性本爱丘山"],
+      ["羁鸟恋旧林", "池鱼思故渊"]
+    ]
+  };
+
+  useEffect(() => {
+    if (isScanning) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  }, [isScanning]);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      alert('请确保允许使用摄像头并使用 HTTPS 或 localhost');
+      console.error('Camera error:', err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+    }
+  };
+
+  const handleScan = async () => {
+    // 模拟识别过程
+    const mockResult = {
+      poem: "声声慢",
+      recognized: "寻寻觅觅",
+      isCorrect: true,
+      time: new Date().toLocaleTimeString()
+    };
+
+    setResults(prev => [mockResult, ...prev]);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div className="h-screen flex flex-col md:flex-row bg-gray-100">
+      {/* 扫描区域 */}
+      <div className="flex-1 relative bg-black">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        
+        {/* 扫描框 */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                      border-2 border-blue-500 w-4/5 h-32 rounded-lg">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* 控制按钮 */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+          <button
+            onClick={() => setIsScanning(!isScanning)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center"
+          >
+            {isScanning ? '停止扫描' : '开始扫描'}
+          </button>
+          
+          <button
+            onClick={handleScan}
+            disabled={!isScanning}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg disabled:opacity-50"
+          >
+            识别批改
+          </button>
+        </div>
+      </div>
+
+      {/* 结果显示区域 */}
+      <div className="w-full md:w-96 bg-white shadow-lg overflow-auto">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">批改结果</h2>
+          <p className="text-sm text-gray-500">
+            已批改: {results.length} 题
+          </p>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {results.map((result, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg ${
+                result.isCorrect ? 'bg-green-50' : 'bg-red-50'
+              }`}
+            >
+              <div className="flex justify-between">
+                <span className="font-medium">{result.poem}</span>
+                <span className="text-sm text-gray-500">{result.time}</span>
+              </div>
+              <div className="mt-2">
+                <p>识别文字: {result.recognized}</p>
+                <p className={result.isCorrect ? 'text-green-600' : 'text-red-600'}>
+                  {result.isCorrect ? '✓ 正确' : '× 错误'}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 使用说明 */}
+        <div className="p-4 bg-gray-50 border-t mt-auto">
+          <h3 className="font-medium mb-2">使用说明</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>1. 点击"开始扫描"启动相机</li>
+            <li>2. 将默写内容对准蓝色框</li>
+            <li>3. 点击"识别批改"进行批改</li>
+            <li>4. 查看右侧批改结果</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default ScanGraderDemo;
